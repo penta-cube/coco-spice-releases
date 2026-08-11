@@ -1,0 +1,115 @@
+name: Release coco-spice
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to create in coco-spice-releases (for example v0.1.0)
+        required: true
+        type: string
+      source_ref:
+        description: coco-spice branch, tag, or commit to build
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.asset }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2025
+            target: x86_64-pc-windows-msvc
+            binary: coco-spice.exe
+            asset: coco-spice-windows-x64.exe
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            binary: coco-spice
+            asset: coco-spice-macos-x64
+          - runner: macos-15
+            target: aarch64-apple-darwin
+            binary: coco-spice
+            asset: coco-spice-macos-arm64
+          - runner: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+            binary: coco-spice
+            asset: coco-spice-linux-x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Check out coco-spice source
+        uses: actions/checkout@v4
+        with:
+          repository: penta-cube/coco-spice
+          ref: ${{ inputs.source_ref }}
+          path: source
+          token: ${{ secrets.COCO_RELEASES_TOKEN }}
+          persist-credentials: false
+
+      - name: Configure private Git dependency access
+        shell: bash
+        env:
+          COCO_RELEASES_TOKEN: ${{ secrets.COCO_RELEASES_TOKEN }}
+        run: |
+          test -n "$COCO_RELEASES_TOKEN"
+          git config --global url."https://x-access-token:${COCO_RELEASES_TOKEN}@github.com/".insteadOf "ssh://git@github.com/"
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Test
+        shell: bash
+        run: cargo test --locked --manifest-path source/Cargo.toml --target "${{ matrix.target }}"
+
+      - name: Build release binary
+        shell: bash
+        run: cargo build --locked --release --manifest-path source/Cargo.toml --target "${{ matrix.target }}"
+
+      - name: Stage release asset
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "source/target/${{ matrix.target }}/release/${{ matrix.binary }}" "dist/${{ matrix.asset }}"
+
+      - name: Upload release asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download build assets
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create checksum manifest
+        working-directory: dist
+        run: sha256sum coco-spice-* > SHA256SUMS
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          SOURCE_REF: ${{ inputs.source_ref }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists." >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "coco-spice $RELEASE_TAG" \
+            --notes "Built from penta-cube/coco-spice ref: $SOURCE_REF"
