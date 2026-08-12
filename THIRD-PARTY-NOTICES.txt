@@ -9,7 +9,7 @@ Windows distribution. The complete ngspice licensing notice is included as
 engines/ngspice/licenses/COPYING.ngspice inside the bundle.
 
 Project: https://ngspice.sourceforge.io/
-Source package: https://sourceforge.net/projects/ngspice/files/ng-spice-rework/46/
+Source package: https://sourceforge.net/projects/ngspice/files/ng-spice-rework/old-releases/46/
 
 LLVM OpenMP runtime
 -------------------

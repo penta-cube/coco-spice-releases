@@ -15,7 +15,7 @@ $ErrorActionPreference = "Stop"
 $ngspiceVersion = "46"
 $ngspiceArchiveName = "ngspice-46_64.7z"
 $ngspiceArchiveSha256 = "7ed713cd8d401db724ffe99087c3122bf05a9cfa99de02c6eeed44ee44785a33"
-$ngspiceSourceUrl = "https://sourceforge.net/projects/ngspice/files/ng-spice-rework/46/ngspice-46_64.7z/download"
+$ngspiceSourceUrl = "https://sourceforge.net/projects/ngspice/files/ng-spice-rework/old-releases/46/ngspice-46_64.7z/download"
 
 $cocoSpicePath = (Resolve-Path -LiteralPath $CocoSpiceExecutable).Path
 $ngspicePath = (Resolve-Path -LiteralPath $NgspiceRoot).Path

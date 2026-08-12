@@ -91,7 +91,7 @@ jobs:
         run: |
           $archivePath = Join-Path $env:RUNNER_TEMP "ngspice-46_64.7z"
           $extractPath = Join-Path $env:RUNNER_TEMP "ngspice-46_64"
-          $url = "https://sourceforge.net/projects/ngspice/files/ng-spice-rework/46/ngspice-46_64.7z/download"
+          $url = "https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/old-releases/46/ngspice-46_64.7z?download"
           $expectedSha256 = "7ed713cd8d401db724ffe99087c3122bf05a9cfa99de02c6eeed44ee44785a33"
 
           Invoke-WebRequest -Uri $url -OutFile $archivePath
