@@ -40,6 +40,8 @@ jobs:
             binary: coco-spice
             asset: coco-spice-linux-x64
     runs-on: ${{ matrix.runner }}
+    env:
+      CARGO_NET_GIT_FETCH_WITH_CLI: "true"
     steps:
       - name: Check out release packaging
         uses: actions/checkout@v4
@@ -62,7 +64,6 @@ jobs:
         run: |
           test -n "$COCO_RELEASES_TOKEN"
           git config --global url."https://x-access-token:${COCO_RELEASES_TOKEN}@github.com/".insteadOf "ssh://git@github.com/"
-          git config --global net.git-fetch-with-cli true
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
