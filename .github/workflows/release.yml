@@ -41,6 +41,11 @@ jobs:
             asset: coco-spice-linux-x64
     runs-on: ${{ matrix.runner }}
     steps:
+      - name: Check out release packaging
+        uses: actions/checkout@v4
+        with:
+          path: release
+
       - name: Check out coco-spice source
         uses: actions/checkout@v4
         with:
@@ -71,17 +76,74 @@ jobs:
         shell: bash
         run: cargo build --locked --release --manifest-path source/Cargo.toml --target "${{ matrix.target }}"
 
-      - name: Stage release asset
+      - name: Stage standalone release asset
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           mkdir -p dist
           cp "source/target/${{ matrix.target }}/release/${{ matrix.binary }}" "dist/${{ matrix.asset }}"
 
+      - name: Download pinned ngspice runtime
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $archivePath = Join-Path $env:RUNNER_TEMP "ngspice-46_64.7z"
+          $extractPath = Join-Path $env:RUNNER_TEMP "ngspice-46_64"
+          $url = "https://sourceforge.net/projects/ngspice/files/ng-spice-rework/46/ngspice-46_64.7z/download"
+          $expectedSha256 = "7ed713cd8d401db724ffe99087c3122bf05a9cfa99de02c6eeed44ee44785a33"
+
+          Invoke-WebRequest -Uri $url -OutFile $archivePath
+          $actualSha256 = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualSha256 -ne $expectedSha256) {
+            throw "ngspice archive SHA-256 mismatch: expected $expectedSha256, got $actualSha256"
+          }
+
+          7z x $archivePath "-o$extractPath" -y
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to extract the pinned ngspice archive."
+          }
+
+      - name: Stage Windows standalone and bundled assets
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & "release/scripts/package-windows.ps1" `
+            -CocoSpiceExecutable "source/target/${{ matrix.target }}/release/${{ matrix.binary }}" `
+            -NgspiceRoot (Join-Path $env:RUNNER_TEMP "ngspice-46_64/Spice64") `
+            -OutputDirectory "dist"
+
+      - name: Smoke test bundled ngspice
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $smokePath = Join-Path $env:RUNNER_TEMP "coco-spice-bundle-smoke"
+          Expand-Archive -LiteralPath "dist/coco-spice-windows-x64.zip" -DestinationPath $smokePath
+          Copy-Item -LiteralPath "source/fixtures/minimal.ngspice.cir" -Destination (Join-Path $smokePath "circuit.ngspice.cir")
+
+          Push-Location $smokePath
+          try {
+            & ".\engines\ngspice\bin\ngspice_con.exe" -n -b -o ngspice.log -r simulation.raw circuit.ngspice.cir
+            $engineExitCode = $LASTEXITCODE
+          } finally {
+            Pop-Location
+          }
+
+          if ($engineExitCode -ne 0) {
+            throw "Bundled ngspice exited with code $engineExitCode."
+          }
+          if (-not (Test-Path -LiteralPath (Join-Path $smokePath "simulation.raw") -PathType Leaf)) {
+            throw "Bundled ngspice did not create simulation.raw."
+          }
+          $issues = @(Select-String -LiteralPath (Join-Path $smokePath "ngspice.log") -Pattern "warning|error|can.t find" -CaseSensitive:$false)
+          if ($issues.Count -ne 0) {
+            throw "Bundled ngspice reported warnings or errors: $($issues.Line -join '; ')"
+          }
+
       - name: Upload release asset
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.asset }}
-          path: dist/${{ matrix.asset }}
+          path: dist/coco-spice-*
           if-no-files-found: error
 
   release:
