@@ -62,6 +62,7 @@ jobs:
         run: |
           test -n "$COCO_RELEASES_TOKEN"
           git config --global url."https://x-access-token:${COCO_RELEASES_TOKEN}@github.com/".insteadOf "ssh://git@github.com/"
+          git config --global net.git-fetch-with-cli true
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
