@@ -89,7 +89,13 @@ try {
         executable = "bin/ngspice_con.exe"
         files = @($manifestFiles)
     }
-    $manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $enginePath "engine-manifest.json") -Encoding utf8
+    $manifestJson = ($manifest | ConvertTo-Json -Depth 6) + [Environment]::NewLine
+    $utf8WithoutBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText(
+        (Join-Path $enginePath "engine-manifest.json"),
+        $manifestJson,
+        $utf8WithoutBom
+    )
 
     Copy-Item -LiteralPath $cocoSpicePath -Destination $standalonePath -Force
     Compress-Archive -Path (Join-Path $stagePath "*") -DestinationPath $archivePath -CompressionLevel Optimal -Force
