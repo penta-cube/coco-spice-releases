@@ -94,7 +94,10 @@ jobs:
           $url = "https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/old-releases/46/ngspice-46_64.7z?download"
           $expectedSha256 = "7ed713cd8d401db724ffe99087c3122bf05a9cfa99de02c6eeed44ee44785a33"
 
-          Invoke-WebRequest -Uri $url -OutFile $archivePath
+          curl.exe -L --fail --retry 3 --user-agent "coco-spice-release/1.0" $url --output $archivePath
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to download the pinned ngspice archive."
+          }
           $actualSha256 = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($actualSha256 -ne $expectedSha256) {
             throw "ngspice archive SHA-256 mismatch: expected $expectedSha256, got $actualSha256"
