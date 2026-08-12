@@ -88,15 +88,20 @@ jobs:
       - name: Download pinned ngspice runtime
         if: runner.os == 'Windows'
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $archivePath = Join-Path $env:RUNNER_TEMP "ngspice-46_64.7z"
           $extractPath = Join-Path $env:RUNNER_TEMP "ngspice-46_64"
-          $url = "https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/old-releases/46/ngspice-46_64.7z?download"
           $expectedSha256 = "7ed713cd8d401db724ffe99087c3122bf05a9cfa99de02c6eeed44ee44785a33"
 
-          curl.exe -L --fail --retry 3 --user-agent "coco-spice-release/1.0" $url --output $archivePath
+          gh release download ngspice-46 `
+            --repo $env:GITHUB_REPOSITORY `
+            --pattern "ngspice-46_64.7z" `
+            --dir $env:RUNNER_TEMP `
+            --clobber
           if ($LASTEXITCODE -ne 0) {
-            throw "Failed to download the pinned ngspice archive."
+            throw "Failed to download the pinned ngspice archive from the ngspice-46 release."
           }
           $actualSha256 = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($actualSha256 -ne $expectedSha256) {
