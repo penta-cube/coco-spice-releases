@@ -1,0 +1,21 @@
+CoCo SPICE third-party notices
+================================
+
+ngspice
+-------
+
+The Windows CoCo SPICE bundle includes ngspice 46 from the official ngspice
+Windows distribution. The complete ngspice licensing notice is included as
+engines/ngspice/licenses/COPYING.ngspice inside the bundle.
+
+Project: https://ngspice.sourceforge.io/
+Source package: https://sourceforge.net/projects/ngspice/files/ng-spice-rework/old-releases/46/
+
+LLVM OpenMP runtime
+-------------------
+
+The official ngspice Windows distribution includes libomp140.x86_64.dll, the
+LLVM OpenMP runtime. LLVM is licensed under the Apache License v2.0 with LLVM
+Exceptions.
+
+Project and license: https://llvm.org/LICENSE.txt
