@@ -1,0 +1,23 @@
+{
+  "version": "v0.6.1",
+  "source_repository": "penta-cube/coco-spice",
+  "source_sha": "76b216da3f45e96333a68b4d86701eaecea1bc21",
+  "schematic_model_sha": "7411c24f0f8b3454daeff3940398c4174d717024",
+  "runtime_repository_sha": "b84f858ec4fe941acfc63d625d19a6bd1ab9b43e",
+  "platforms": [
+    "windows-x64"
+  ],
+  "validation": "local tests, release build, package smoke",
+  "assets": [
+    {
+      "name": "coco-spice-windows-x64.exe",
+      "bytes": 3089920,
+      "sha256": "6aeca152c88045880e1c88b88a40d68c8b7c07e3cf666d3f0ca9bab1f7cecad0"
+    },
+    {
+      "name": "coco-spice-windows-x64.zip",
+      "bytes": 5356697,
+      "sha256": "63010fc04f7d9ee66b2282aebd32930fc0f1c32316899e99704907b65c1be6dd"
+    }
+  ]
+}
