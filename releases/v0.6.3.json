@@ -1,0 +1,44 @@
+{
+  "version": "v0.6.3",
+  "source_repository": "penta-cube/coco-spice",
+  "source_sha": "9880936d319499abf53ba4f24f82a26a8aa08f6a",
+  "schematic_model_sha": "89fc81dbf559d798d18894f2cf5ef98bfda961f9",
+  "source_ref": "main",
+  "platforms": [
+    "windows-x64"
+  ],
+  "validation": "cargo test --locked; cargo build --release --locked; CLI --help",
+  "test_counts": [
+    [
+      "196",
+      "0",
+      "0"
+    ],
+    [
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "0",
+      "0",
+      "0"
+    ]
+  ],
+  "excludes_unmerged_prs": [
+    "penta-cube/coco-connect-syscap#6",
+    "penta-cube/cubic-ai-chat#477"
+  ],
+  "assets": [
+    {
+      "name": "coco-spice-windows-x64.exe",
+      "bytes": 3209216,
+      "sha256": "be44a371752be9fa426b284f13517c0729a5e6c67764d47c9029893b20da8146"
+    },
+    {
+      "name": "coco-spice-windows-x64.zip",
+      "bytes": 5582707,
+      "sha256": "8ca58a8a2e415acfb69fcd40cb304ae21b6039f28114740f326936d401bdeae0"
+    }
+  ]
+}
